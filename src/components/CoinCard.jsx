@@ -2,7 +2,7 @@ import { Heading, Image, Text, VStack } from "@chakra-ui/react";
 import React from "react";
 import { Link } from "react-router-dom"; // Use Link from react-router-dom
 
-const CoinCard = ({ id, name, img, symbol, price, currencySymbol = "PKR" }) => {
+const CoinCard = ({ id, name, img, symbol, price, currencySymbol = "Pkr" }) => {
   return (
     <Link to={`/coin/${id}`}>
       <VStack
