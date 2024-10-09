@@ -1,7 +1,6 @@
 import {
   Badge,
   Box,
-  Center,
   Container,
   HStack,
   Image,
@@ -16,127 +15,133 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Loader from "./Loader";
-import { useState, useEffect } from "react";
 import axios from "axios";
 import { server } from "..";
 import ErrorCom from "./ErrorCom";
+import Chart from "./Chart";
 
 const CoinDetail = () => {
   const [loading, setLoading] = useState(true);
-  const [coin, setCoin] = useState([]);
-  const [page, setPage] = useState(1);
+  const [coin, setCoin] = useState(null); // Initialize as null
   const [error, setError] = useState(false);
   const [currency, setCurrency] = useState("Pkr");
-
-  const params = useParams();
+  const [days, setDays] = useState("24h");
+  const [chartArray, setChartArray] = useState([]);
 
   const currencySymbol =
     currency === "Pkr" ? "Rs." : currency === "eur" ? "€" : "$";
 
+  const params = useParams();
+
   useEffect(() => {
     const fetchCoin = async () => {
+      setLoading(true); // Set loading state at the start
       try {
         const { data } = await axios.get(`${server}/coins/${params.id}`);
-        setCoin(data);
-        setLoading(false);
-        console.log(data);
+        const { data: chartData } = await axios.get(
+          `${server}/coins/${params.id}/market_chart?vs_currency=${currency}&days=${days}`
+        );
+
+        setChartArray(chartData.prices);
+        setCoin(data); // Set coin data here
       } catch (error) {
         console.error("Error fetching data:", error);
         setError(true);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchCoin();
-  }, [params.id]);
+  }, [params.id]); // Only depends on params.id
 
   if (error) return <ErrorCom message={"Error while fetching Coin"} />;
 
+  if (loading) return <Loader />;
+
+  if (!coin) return <div>No coin data available.</div>; // Handle undefined coin data
+
   return (
     <Container maxW={"container.xl"}>
-      {loading ? (
-        <Loader />
-      ) : (
-        <>
-          <Box borderWidth={1} w={"full"}></Box>
+      <Box borderWidth={1} w={"full"}>
+        <Chart arr={chartArray} currency={currencySymbol} days={days} />
+      </Box>
 
-          <RadioGroup value={currency} onChange={setCurrency} p={8}>
-            <HStack spacing={"4"}>
-              <Radio value={"PKR"}>RS.</Radio>
-              <Radio value={"usd"}>$</Radio>
-              <Radio value={"eur"}>€</Radio>
-            </HStack>
-          </RadioGroup>
+      <RadioGroup value={currency} onChange={setCurrency} p={8}>
+        <HStack spacing={"4"}>
+          <Radio value={"Pkr"}>RS.</Radio>
+          <Radio value={"usd"}>$</Radio>
+          <Radio value={"eur"}>€</Radio>
+        </HStack>
+      </RadioGroup>
 
-          <VStack spacing={"4"} p={"16"} alignItems={"flex-start"}>
-            <Text fontSize={"small"} alignSelf={"center"}>
-              Last Update On {Date(coin.market_data.last_updated).split("G")[0]}
-            </Text>
+      <VStack spacing={"4"} p={"16"} alignItems={"flex-start"}>
+        <Text fontSize={"small"} alignSelf={"center"}>
+          Last Update On{" "}
+          {new Date(coin.market_data.last_updated).toLocaleString()}
+        </Text>
 
-            <Image
-              src={coin.image.large}
-              w={"16"}
-              h={"16"}
-              objectFit={"contain"}
-            ></Image>
+        <Image
+          src={coin.image.large}
+          w={"16"}
+          h={"16"}
+          objectFit={"contain"}
+        ></Image>
 
-            <Stat>
-              <StatLabel>{coin.name}</StatLabel>
-              <StatNumber>
-                {currencySymbol}
-                {coin.market_data.current_price[currency]}
-              </StatNumber>
-              <StatHelpText>
-                <StatArrow
-                  type={
-                    coin.market_data.price_change_percentage_24h > 0
-                      ? "decrease"
-                      : "increase"
-                  }
-                />
-                {coin.market_data.price_change_24h}%
-              </StatHelpText>
-            </Stat>
-
-            <Badge
-              fontSize={"2xl"}
-              bgColor={"blackAlpha.900"}
-              color={"white"}
-            >{`#${coin.market_cap_rank}`}</Badge>
-
-            <CustomBar
-              high={`${currencySymbol}${coin.market_data.high_24h[currency]}`}
-              low={`${currencySymbol}${coin.market_data.low_24h[currency]}`}
+        <Stat>
+          <StatLabel>{coin.name}</StatLabel>
+          <StatNumber>
+            {currencySymbol}
+            {coin.market_data.current_price[currency]}
+          </StatNumber>
+          <StatHelpText>
+            <StatArrow
+              type={
+                coin.market_data.price_change_percentage_24h > 0
+                  ? "increase"
+                  : "decrease"
+              }
             />
+            {coin.market_data.price_change_percentage_24h}%
+          </StatHelpText>
+        </Stat>
 
-            <Box w={"full"} p={"4"}>
-              <Item title={"Max Supply"} value={coin.market_data.max_supply} />
-              <Item
-                title={"Circulating Supply"}
-                value={coin.market_data.circulating_supply}
-              />
-              <Item
-                title={"Market Cap"}
-                value={`${currencySymbol}${coin.market_data.market_cap[currency]}`}
-              />
-              {/* <Item
-                title={"All Time Low"}
-                value={`${currencySymbol}${coin.market_data.atl[currency]}`}
-              />
-              <Item
-                title={"All Time High"}
-                value={`${currencySymbol}${coin.market_data.market_ath[currency]}`}
-              /> */}
-            </Box>
-          </VStack>
-        </>
-      )}
+        <Badge fontSize={"2xl"} bgColor={"blackAlpha.900"} color={"white"}>
+          {`#${coin.market_cap_rank}`}
+        </Badge>
+
+        <CustomBar
+          high={`${currencySymbol}${coin.market_data.high_24h[currency]}`}
+          low={`${currencySymbol}${coin.market_data.low_24h[currency]}`}
+        />
+
+        <Box w={"full"} p={"4"}>
+          <Item title={"Max Supply"} value={coin.market_data.max_supply} />
+          <Item
+            title={"Circulating Supply"}
+            value={coin.market_data.circulating_supply}
+          />
+          <Item
+            title={"Market Cap"}
+            value={`${currencySymbol}${coin.market_data.market_cap[currency]}`}
+          />
+          <Item
+            title={"All Time Low"}
+            value={`${currencySymbol}${coin.market_data.atl[currency]}`}
+          />
+          <Item
+            title={"All Time High"}
+            value={`${currencySymbol}${coin.market_data.ath[currency]}`}
+          />
+        </Box>
+      </VStack>
     </Container>
   );
 };
+
 const Item = ({ title, value }) => {
   return (
     <HStack justifyContent={"space-between"} w={"full"} my={"4"}>
