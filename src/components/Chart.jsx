@@ -27,9 +27,9 @@ const Chart = ({ arr = [], currency, days }) => {
 
   for (let i = 0; i < arr.length; i++) {
     if (days === "24h") {
-      date.push(new Date(arr[i][0]).toTimeString().split(" ")[0]); // Just take time part
+      date.push(new Date(arr[i][0]).toLocaleTimeString()); // Just take time part
     } else {
-      date.push(new Date(arr[i][0]).toDateString());
+      date.push(new Date(arr[i][0]).toLocaleDateString());
     }
     prices.push(arr[i][1]); // Assuming arr[i][1] holds the price
   }
