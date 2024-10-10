@@ -75,14 +75,12 @@ const CoinDetail = () => {
             <Text fontSize={"small"} alignSelf={"center"}>
               Last Update On {Date(coin.market_data.last_updated).split("G")[0]}
             </Text>
-
             <Image
               src={coin.image.large}
               w={"16"}
               h={"16"}
               objectFit={"contain"}
             ></Image>
-
             <Stat>
               <StatLabel>{coin.name}</StatLabel>
               <StatNumber>
@@ -100,18 +98,15 @@ const CoinDetail = () => {
                 {coin.market_data.price_change_24h}%
               </StatHelpText>
             </Stat>
-
             <Badge
               fontSize={"2xl"}
               bgColor={"blackAlpha.900"}
               color={"white"}
             >{`#${coin.market_cap_rank}`}</Badge>
-
             <CustomBar
               high={`${currencySymbol}${coin.market_data.high_24h[currency]}`}
               low={`${currencySymbol}${coin.market_data.low_24h[currency]}`}
             />
-
             <Box w={"full"} p={"4"}>
               <Item title={"Max Supply"} value={coin.market_data.max_supply} />
               <Item
@@ -122,15 +117,16 @@ const CoinDetail = () => {
                 title={"Market Cap"}
                 value={`${currencySymbol}${coin.market_data.market_cap[currency]}`}
               />
-              {/* <Item
+              <Item
                 title={"All Time Low"}
                 value={`${currencySymbol}${coin.market_data.atl[currency]}`}
               />
               <Item
                 title={"All Time High"}
-                value={`${currencySymbol}${coin.market_data.market_ath[currency]}`}
-              /> */}
+                value={`${currencySymbol}${coin.market_data.ath[currency]}`}
+              />
             </Box>
+            t
           </VStack>
         </>
       )}
