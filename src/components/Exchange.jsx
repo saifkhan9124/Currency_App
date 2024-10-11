@@ -58,7 +58,7 @@ const Exchange = () => {
 
 const ExChangeCard = ({ name, img, rank, url }) => {
   return (
-    <a href={url} target={"blank"} rel="noopener noreferrer">
+    <a href={url} target={"_blank"} rel="noopener noreferrer">
       <VStack
         w={52}
         shadow="lg"
